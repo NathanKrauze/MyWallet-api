@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { db } from '../app.js';
+import { db } from '../database/database.connection.js';
 import { v4 as uuid} from 'uuid';
 import { signUpSchema, loginSchema } from '../Schemas/users.schemas.js';
 
@@ -38,9 +38,25 @@ export async function userLogin (req, res){
 
         const token = uuid();
         
-		await db.collection("sessions").insertOne({userId: user._id,token})
+		await db.collection("sessions").insertOne({userId: user._id, token})
         res.status(200).send(token);
     } catch (err){
         res.status(500).send(err.message)
+    }
+}
+
+export async function logout(req, res){
+    const { authorization } = req.headers
+    const token = authorization?.replace("Bearer ", "")
+    if (!token) return res.status(401).send("Token not sended");
+
+    try{
+        const session = await db.collection('sessions').findOne({token});
+        if(!session) return res.status(401).send('Invalid token');
+
+        await db.collection('sessions').deleteOne({token});
+        res.sendStatus(200);
+    } catch (err) {
+        res.status(500).send(err.message);
     }
 }
