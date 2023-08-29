@@ -37,9 +37,11 @@ export async function userLogin (req, res){
         if(!passwordRight) res.status(401).send('incorrect password');
 
         const token = uuid();
+
+        const session = {user: user.name, token}
         
-		await db.collection("sessions").insertOne({userId: user._id, token})
-        res.status(200).send(token);
+		await db.collection("sessions").insertOne(session)
+        res.status(200).send(session);
     } catch (err){
         res.status(500).send(err.message)
     }

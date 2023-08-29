@@ -18,7 +18,7 @@ export async function addTransaction(req, res){
         const session = await db.collection('sessions').findOne({token});
         if(!session) return res.status(401).send('Invalid token');
 
-        const user = await db.collection('users').findOne({_id: session.userId});
+        const user = await db.collection('users').findOne({name: session.user});
         transaction = {user: user.name, value, description, type, date: dayjs().format('DD/MM')}
 
         await db.collection('transactions').insertOne(transaction);
@@ -37,7 +37,7 @@ export async function showTransactions(req, res){
         const session = await db.collection('sessions').findOne({token});
         if(!session) return res.status(401).send('Invalid token');
 
-        const user = await db.collection('users').findOne({_id: session.userId});
+        const user = await db.collection('users').findOne({name: session.user});
 
         const transactions = await db.collection('transactions').find({user: user.name}).toArray();
         res.send(transactions);
